@@ -538,6 +538,14 @@ def activity_view(request):
                     "facility_type": f.facility_type or "공공체육시설",
                     "distance_km": f.distance_km if hasattr(f, "distance_km") else None,
                     "kakao_map_url": f.kakao_map_url,
+                    "operating_info": {
+                        "status_label": f.operating_info["status_label"],
+                        "badge_bg": f.operating_info["badge_bg"],
+                        "badge_border": f.operating_info["badge_border"],
+                        "badge_color": f.operating_info["badge_color"],
+                        "badge_icon": f.operating_info["badge_icon"],
+                        "status_detail": f.operating_info.get("status_detail", ""),
+                    } if getattr(f, "operating_info", None) else None,
                 }
                 for f in recommendations
             ]

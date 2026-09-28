@@ -540,6 +540,51 @@
 .mascot-assembly.style-slim, .mascot-assembly.style-active { --mascot-motion: cuteTigerJog; --mascot-duration: 1.4s; }
 .mascot-assembly.style-muscular { --mascot-motion: cuteBearPump; --mascot-duration: 2.5s; }
 .mascot-assembly.style-soft { --mascot-motion: cuteHamsterHop; --mascot-duration: 1.7s; }
+.mascot-assembly.style-balanced { --mascot-motion: cuteDinoWaddle; --mascot-duration: 2.6s; }
+
+/*
+ * 캐릭터마다 머리/얼굴/몸통/손의 실제 위치가 다르다. 모든 장비가 같은
+ * 좌표를 사용하면 백호에게 맞춘 아이템이 포동·토리·아콩에게 떠 보이므로,
+ * 피팅룸의 13개 오버레이 아이템을 캐릭터별 인체 앵커에 맞춘다.
+ * CAP/SPORT/CROWN은 캐릭터가 직접 착용한 합성 스프라이트를 사용한다.
+ */
+.mascot-assembly.style-slim,
+.mascot-assembly.style-active {
+  --head-x: 42%; --head-y: 17px; --head-w: 52px; --head-rotate: -8deg;
+  --face-x: 43%; --eyes-y: 38px; --face-y: 49px; --face-rotate: -5deg;
+  --torso-x: 43%; --belt-y: 79px; --chest-y: 55px; --body-rotate: -12deg;
+  --hand-left-x: 22px; --hand-right-x: 17px; --hands-y: 29px;
+  --back-x: 43%; --back-y: 46px; --back-w: 72px;
+  --wing-y: 34px; --wing-outset: -3px;
+  --side-left: 1px; --side-right: 2px;
+}
+.mascot-assembly.style-muscular {
+  --head-x: 51%; --head-y: 15px; --head-w: 55px; --head-rotate: 0deg;
+  --face-x: 51%; --eyes-y: 37px; --face-y: 48px; --face-rotate: 0deg;
+  --torso-x: 51%; --belt-y: 82px; --chest-y: 57px; --body-rotate: 0deg;
+  --hand-left-x: 28px; --hand-right-x: 17px; --hands-y: 38px;
+  --back-x: 51%; --back-y: 47px; --back-w: 78px;
+  --wing-y: 34px; --wing-outset: -5px;
+  --side-left: -3px; --side-right: -1px;
+}
+.mascot-assembly.style-soft {
+  --head-x: 50%; --head-y: 14px; --head-w: 61px; --head-rotate: 0deg;
+  --face-x: 50%; --eyes-y: 38px; --face-y: 49px; --face-rotate: 0deg;
+  --torso-x: 50%; --belt-y: 86px; --chest-y: 59px; --body-rotate: 0deg;
+  --hand-left-x: 8px; --hand-right-x: 7px; --hands-y: 38px;
+  --back-x: 50%; --back-y: 48px; --back-w: 90px;
+  --wing-y: 37px; --wing-outset: -12px;
+  --side-left: -7px; --side-right: -7px;
+}
+.mascot-assembly.style-balanced {
+  --head-x: 50%; --head-y: 13px; --head-w: 57px; --head-rotate: 0deg;
+  --face-x: 50%; --eyes-y: 39px; --face-y: 51px; --face-rotate: 0deg;
+  --torso-x: 50%; --belt-y: 84px; --chest-y: 58px; --body-rotate: 0deg;
+  --hand-left-x: 7px; --hand-right-x: 6px; --hands-y: 38px;
+  --back-x: 50%; --back-y: 47px; --back-w: 82px;
+  --wing-y: 35px; --wing-outset: -9px;
+  --side-left: -5px; --side-right: -5px;
+}
 
 .mascot-assembly .avatar-roster {
   position: absolute;
@@ -574,10 +619,10 @@
 /* 1. ⚡ 스포티 네온 헤어밴드 (BAND) */
 .acc-headband {
   position: absolute;
-  top: 22px;
-  left: 50.5%;
-  transform: translateX(-50%) rotate(-7deg);
-  width: 55px;
+  top: var(--head-y);
+  left: var(--head-x);
+  transform: translateX(-50%) rotate(var(--head-rotate));
+  width: var(--head-w);
   filter: drop-shadow(0 2px 6px rgba(0, 245, 155, 0.8));
 }
 .acc-headband .acc-svg {
@@ -589,10 +634,10 @@
 /* 2. 🕶️ 사이버 네온 선글라스 (GLASS) */
 .acc-sunglasses {
   position: absolute;
-  top: 39px;
-  left: 51.5%;
-  transform: translateX(-50%) rotate(-2deg);
-  width: 53px;
+  top: var(--eyes-y);
+  left: var(--face-x);
+  transform: translateX(-50%) rotate(var(--face-rotate));
+  width: calc(var(--head-w) * .96);
   filter: drop-shadow(0 3px 8px rgba(0, 245, 155, 0.85));
 }
 .acc-sunglasses .acc-svg {
@@ -604,10 +649,10 @@
 /* 3. 🎧 사이버 게이밍 헤드셋 (HEADSET) */
 .acc-headset {
   position: absolute;
-  top: 8px;
-  left: 50.5%;
-  transform: translateX(-50%) rotate(-3deg);
-  width: 68px;
+  top: calc(var(--head-y) - 10px);
+  left: var(--head-x);
+  transform: translateX(-50%) rotate(var(--head-rotate));
+  width: calc(var(--head-w) * 1.23);
   filter: drop-shadow(0 2px 8px rgba(56, 189, 248, 0.7));
 }
 .acc-headset .acc-svg {
@@ -619,10 +664,10 @@
 /* 4. 🥷 사이버 닌자 마스크 (MASK) */
 .acc-ninja-mask {
   position: absolute;
-  top: 50px;
-  left: 51.5%;
-  transform: translateX(-50%) rotate(-2deg);
-  width: 38px;
+  top: var(--face-y);
+  left: var(--face-x);
+  transform: translateX(-50%) rotate(var(--face-rotate));
+  width: calc(var(--head-w) * .70);
   filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.8));
 }
 .acc-ninja-mask .acc-svg {
@@ -634,10 +679,10 @@
 /* 5. 🥋 골드 챔피언 벨트 (BELT) */
 .acc-champion-belt {
   position: absolute;
-  top: 80px;
-  left: 48%;
-  transform: translateX(-50%) rotate(-6deg);
-  width: 44px;
+  top: var(--belt-y);
+  left: var(--torso-x);
+  transform: translateX(-50%) rotate(var(--body-rotate));
+  width: calc(var(--back-w) * .58);
   filter: drop-shadow(0 3px 8px rgba(245, 158, 11, 0.7));
 }
 .acc-champion-belt .acc-svg {
@@ -649,8 +694,8 @@
 /* 6. 🥇 골드 빅토리 목걸이 (MEDAL) */
 .acc-victory-medal {
   position: absolute;
-  top: 56px;
-  left: 50%;
+  top: var(--chest-y);
+  left: var(--torso-x);
   transform: translateX(-50%);
   width: 32px;
   height: 28px;
@@ -691,18 +736,18 @@
   background: radial-gradient(circle at 35% 35%, #F87171, #DC2626);
   border: 2px solid #FDE047;
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
-  bottom: 22px;
+  bottom: var(--hands-y);
 }
-.acc-glove.left { left: 16px; }
-.acc-glove.right { right: 16px; }
+.acc-glove.left { left: var(--hand-left-x); }
+.acc-glove.right { right: var(--hand-right-x); }
 
 /* 8. 🦸 다크 히어로 망토 (CLOAK - 배경 레이어) */
 .acc-cloak {
   position: absolute;
-  top: 48px;
-  left: 50%;
+  top: var(--back-y);
+  left: var(--back-x);
   transform: translateX(-50%);
-  width: 82px;
+  width: var(--back-w);
   height: 68px;
   background: linear-gradient(180deg, #3B0764 0%, #1E1B4B 100%);
   clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 80% 88%, 50% 100%, 20% 88%, 0% 100%);
@@ -719,7 +764,7 @@
 .acc-beamsaber {
   position: absolute;
   top: 15px;
-  right: -2px;
+  right: var(--side-right);
   width: 14px;
   height: 65px;
   display: flex;
@@ -745,7 +790,7 @@
 /* 10. 🪽 사이버 홀로그램 윙 (WING - 배경 레이어) */
 .acc-wing-left, .acc-wing-right {
   position: absolute;
-  top: 30px;
+  top: var(--wing-y);
   width: 44px;
   height: 44px;
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.8), rgba(168, 85, 247, 0.5));
@@ -754,12 +799,12 @@
   animation: wingBeat 1.8s ease-in-out infinite alternate;
 }
 .acc-wing-left {
-  left: -8px;
+  left: var(--wing-outset);
   border-radius: 2px 30px 2px 30px;
   transform-origin: right bottom;
 }
 .acc-wing-right {
-  right: -8px;
+  right: var(--wing-outset);
   border-radius: 30px 2px 30px 2px;
   transform-origin: left bottom;
 }
@@ -772,7 +817,7 @@
 .acc-dragon-pet {
   position: absolute;
   top: 10px;
-  right: -8px;
+  right: var(--side-right);
   font-size: 26px;
   filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8));
   animation: petFloat 2s ease-in-out infinite alternate;
@@ -803,7 +848,7 @@
 .acc-trophy-float {
   position: absolute;
   bottom: 22px;
-  left: -6px;
+  left: var(--side-left);
   font-size: 26px;
   filter: drop-shadow(0 0 10px rgba(245,158,11,0.9));
   animation: trophyHover 2.2s ease-in-out infinite alternate;

@@ -1,4 +1,4 @@
-﻿from datetime import date, timedelta
+from datetime import date, timedelta
 from django.contrib.auth.models import User
 from datetime import time
 from django.core.cache import cache
@@ -180,3 +180,25 @@ class PartyEnhancementsTestCase(TestCase):
 
         messages = list(res.context["messages"])
         self.assertTrue(any("등록되지 않은 사용자입니다" in m.message for m in messages))
+
+    def test_onboarding_group_quest_ai_and_facility_actions(self):
+        """AI 협동 미션 팩 및 체육시설 연계 파티 미션 추가 동작 검증"""
+        self.client.login(username="testuser", password="password123")
+
+        # 1. AI 협동 미션 팩 추가
+        res_ai = self.client.post(reverse("onboarding_group_quest", args=[self.party.id]), {
+            "action": "ai",
+        })
+        self.assertRedirects(res_ai, reverse("dashboard"))
+        ai_quests = DailyQuest.objects.filter(party=self.party, source="DIRECT")
+        self.assertGreaterEqual(ai_quests.count(), 3)
+        self.assertTrue(ai_quests.filter(title__contains="30분 달성").exists())
+
+        # 2. 체육시설 연계 파티 미션 추가
+        res_fac = self.client.post(reverse("onboarding_group_quest", args=[self.party.id]), {
+            "action": "facility",
+        })
+        self.assertRedirects(res_fac, reverse("dashboard"))
+        fac_quests = DailyQuest.objects.filter(party=self.party, source="DIRECT", mission_category="FACILITY")
+        self.assertTrue(fac_quests.exists())
+

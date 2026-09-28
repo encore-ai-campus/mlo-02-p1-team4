@@ -282,17 +282,24 @@ class SyncFacilitiesTests(FacilityCommandTestMixin, TestCase):
         self.assertEqual(school_weekend_info["status_code"], "SCHOOL_OPEN")
         self.assertEqual(school_weekend_info["status_label"], "학교 개방")
 
-        # 3. 실내 수영장 / 체육센터 -> 평일 주간(운영 중) vs 심야(운영 종료)
+        # 3. 실내 수영장 / 체육센터 -> 평일 주간(운영 중) vs 심야(운영 종료) vs 월요일(정기 휴무)
         center = Facility.objects.create(name="올림픽수영장", facility_type="수영장", region="서울특별시")
         open_time = timezone.make_aware(datetime(2026, 9, 22, 14, 0))  # 화요일 14:00
         center_open_info = get_facility_operating_info(center, now=open_time)
         self.assertEqual(center_open_info["status_code"], "OPEN")
         self.assertEqual(center_open_info["status_label"], "운영 중")
+        self.assertEqual(center_open_info["hours_display"], "평일 06:00 ~ 22:00")
 
         night_time = timezone.make_aware(datetime(2026, 9, 22, 23, 30))  # 화요일 23:30
         center_night_info = get_facility_operating_info(center, now=night_time)
         self.assertEqual(center_night_info["status_code"], "CLOSED")
         self.assertEqual(center_night_info["status_label"], "운영 종료")
+
+        monday_time = timezone.make_aware(datetime(2026, 9, 21, 14, 0))  # 월요일 14:00
+        center_monday_info = get_facility_operating_info(center, now=monday_time)
+        self.assertEqual(center_monday_info["status_code"], "HOLIDAY")
+        self.assertEqual(center_monday_info["status_label"], "오늘 휴무")
+        self.assertEqual(center_monday_info["hours_display"], "매주 월요일 정기휴무")
 
         # 4. 네이버 플레이스 상세 정보 URL 검증
         self.assertIn("map.naver.com/p/search", center.naver_place_url)

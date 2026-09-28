@@ -545,6 +545,7 @@ def activity_view(request):
                         "badge_color": f.operating_info["badge_color"],
                         "badge_icon": f.operating_info["badge_icon"],
                         "status_detail": f.operating_info.get("status_detail", ""),
+                        "hours_display": f.operating_info.get("hours_display", ""),
                     } if getattr(f, "operating_info", None) else None,
                 }
                 for f in recommendations

@@ -1451,17 +1451,18 @@ def weather_api(request):
     lat = request.GET.get("lat")
     lng = request.GET.get("lng")
     loc_name = request.GET.get("loc_name", "")
+    force_refresh = request.GET.get("refresh") in ("1", "true", "True")
     user_area = request.user.profile.area if request.user.is_authenticated else "서울특별시"
 
     if lat and lng:
         try:
-            w = get_weather_data(lat=float(lat), lon=float(lng), location_name=loc_name, is_gps=True)
+            w = get_weather_data(lat=float(lat), lon=float(lng), location_name=loc_name, is_gps=True, force_refresh=force_refresh)
             return JsonResponse({"status": "success", "weather": w})
         except ValueError:
             pass
 
     coords = weather_coordinates(user_area)
-    w = get_weather_data(lat=coords[0], lon=coords[1], location_name=user_area, is_gps=False)
+    w = get_weather_data(lat=coords[0], lon=coords[1], location_name=user_area, is_gps=False, force_refresh=force_refresh)
     return JsonResponse({"status": "success", "weather": w})
 
 

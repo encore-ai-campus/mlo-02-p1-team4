@@ -140,17 +140,15 @@ REGION_COORDINATES = {
     "제주특별자치도": (33.4996, 126.5312),
 }
 
-# 2. 기상 코드 및 강수 상태 분석
-def interpret_weather_code(code, temp=20, text_desc="", precip=0.0):
+# 2. 기상 코드 및 강수/운량 상태 정밀 분석 (기상청 표준 운량 및 WMO 코드 통합)
+def interpret_weather_code(code, temp=20, text_desc="", precip=0.0, cloud_cover=None, is_day=1):
     t_desc = (text_desc or "").lower()
-    is_rain = (
-        (precip > 0.0)
-        or ("rain" in t_desc)
-        or ("shower" in t_desc)
-        or ("drizzle" in t_desc)
-        or ("비" in t_desc)
-        or ("소나기" in t_desc)
-        or (code in [51, 53, 55, 61, 63, 65, 80, 81, 82, 176, 263, 266, 281, 284, 293, 296, 299, 302, 305, 308, 311, 314, 353, 356, 359])
+
+    # 1. 강수 및 악천후 판별 (최우선 순위)
+    is_thunder = (
+        ("thunder" in t_desc)
+        or ("뇌우" in t_desc)
+        or (code in [95, 96, 99, 200, 386, 389, 392, 395])
     )
     is_snow = (
         ("snow" in t_desc)
@@ -158,10 +156,23 @@ def interpret_weather_code(code, temp=20, text_desc="", precip=0.0):
         or ("눈" in t_desc)
         or (code in [71, 73, 75, 77, 85, 86, 179, 182, 185, 227, 230, 317, 320, 323, 326, 329, 332, 335, 338, 350, 362, 365, 368, 371, 374, 377])
     )
-    is_thunder = (
-        ("thunder" in t_desc)
-        or ("뇌우" in t_desc)
-        or (code in [95, 96, 99, 200, 386, 389, 392, 395])
+    is_shower = (
+        ("shower" in t_desc)
+        or ("소나기" in t_desc)
+        or (code in [80, 81, 82, 353, 356, 359])
+    )
+    is_drizzle = (
+        ("drizzle" in t_desc)
+        or ("이슬비" in t_desc)
+        or (code in [51, 53, 55, 263, 266, 281, 284])
+    )
+    is_rain = (
+        is_shower
+        or is_drizzle
+        or (precip >= 0.1)
+        or ("rain" in t_desc)
+        or ("비" in t_desc)
+        or (code in [61, 63, 65, 176, 293, 296, 299, 302, 305, 308, 311, 314])
     )
     is_fog = (
         ("fog" in t_desc)
@@ -169,42 +180,62 @@ def interpret_weather_code(code, temp=20, text_desc="", precip=0.0):
         or ("안개" in t_desc)
         or (code in [45, 48, 143, 248, 260])
     )
-    is_cloudy = (
-        ("overcast" in t_desc)
-        or ("cloudy" in t_desc)
-        or ("흐림" in t_desc)
-        or (code in [3, 119, 122])
-    )
 
-    if is_rain:
-        cond, icon, color = "비/소나기", "fa-cloud-showers-heavy", "#60A5FA"
-        msg = "비가 오니 실내 체육관 근력 운동이나 수영을 추천합니다."
+    if is_thunder:
+        cond, icon, color = "뇌우", "fa-bolt", "#F43F5E"
+        msg = "낙뢰 위험이 있으니 야외 운동을 피하고 실내 휴식을 권장합니다."
     elif is_snow:
         cond, icon, color = "눈", "fa-snowflake", "#E0F2FE"
         msg = "눈이 오니 미끄럼에 유의하시고 실내 홈트를 즐겨보세요."
-    elif is_thunder:
-        cond, icon, color = "뇌우", "fa-bolt", "#F43F5E"
-        msg = "낙뢰 위험이 있으니 야외 운동을 피하고 실내 휴식을 권장합니다."
+    elif is_shower:
+        cond, icon, color = "소나기", "fa-cloud-showers-heavy", "#3B82F6"
+        msg = "국지성 소나기가 내리니 안전한 실내 시설 운동을 추천합니다."
+    elif is_drizzle:
+        cond, icon, color = "이슬비", "fa-cloud-rain", "#60A5FA"
+        msg = "가벼운 이슬비가 내립니다. 모자나 방수 자켓을 챙겨 운동하세요."
+    elif is_rain:
+        cond, icon, color = "비", "fa-cloud-showers-heavy", "#3B82F6"
+        msg = "비가 오니 실내 체육관 근력 운동이나 수영을 추천합니다."
     elif is_fog:
         cond, icon, color = "안개", "fa-smog", "#94A3B8"
         msg = "시야가 다소 흐리니 안전에 유의하여 가볍게 조깅하세요."
-    elif is_cloudy:
-        cond, icon, color = "흐림", "fa-cloud", "#94A3B8"
-        msg = "햇빛 걱정 없이 시원하게 유산소 운동하기에 좋습니다."
-    elif code in [1, 2, 116] or ("partly" in t_desc) or ("구름" in t_desc):
-        cond, icon, color = "구름 조금", "fa-cloud-sun", "#38BDF8"
-        msg = "선선하고 쾌적한 날씨, 야외 인터벌 트레이닝을 추천합니다!"
-    elif code in [0, 113] or ("clear" in t_desc) or ("sunny" in t_desc) or ("맑음" in t_desc):
-        cond, icon, color = "맑음", "fa-sun", "#F59E0B"
-        msg = "쾌청한 맑은 날씨! 야외 러닝과 라이딩하기에 최적입니다."
     else:
-        cond, icon, color = "보통", "fa-cloud-sun", "#00F59B"
-        msg = "오늘도 활기차게 운동하고 체력을 길러보세요!"
+        # 2. 하늘 상태 판별 (기상청 표준 운량 기준: 0~20% 맑음, 21~50% 대체로 맑음, 51~80% 구름 많음, 81~100% 흐림)
+        c_val = cloud_cover if cloud_cover is not None else (
+            90 if code in [3, 119, 122] else (
+                65 if code in [2, 116] else (
+                    35 if code == 1 else 10
+                )
+            )
+        )
 
-    if temp >= 30:
-        msg = "기온이 높으니 충분한 수분을 섭취하며 무리하지 마세요."
-    elif temp <= 0:
-        msg = "영하의 기온입니다. 부상 방지를 위해 충분한 웜업 후 운동하세요."
+        if c_val >= 80 or code in [3, 119, 122] or ("overcast" in t_desc) or ("흐림" in t_desc):
+            cond, icon, color = "흐림", "fa-cloud", "#94A3B8"
+            msg = "햇빛 걱정 없이 시원하게 유산소 운동하기에 좋습니다."
+        elif c_val >= 50 or code == 2 or ("cloudy" in t_desc):
+            cond = "구름 많음"
+            icon = "fa-cloud-sun" if is_day else "fa-cloud-moon"
+            color = "#38BDF8"
+            msg = "선선하고 쾌적한 날씨, 야외 인터벌 트레이닝을 추천합니다!"
+        elif c_val >= 20 or code == 1 or ("partly" in t_desc):
+            cond = "대체로 맑음"
+            icon = "fa-cloud-sun" if is_day else "fa-cloud-moon"
+            color = "#FBBF24"
+            msg = "화창하고 상쾌한 공기! 가벼운 러닝과 산책을 즐겨보세요."
+        else:
+            cond = "맑음"
+            icon = "fa-sun" if is_day else "fa-moon"
+            color = "#F59E0B"
+            msg = "쾌청한 맑은 날씨! 야외 러닝과 라이딩하기에 최적입니다."
+
+    if temp >= 33:
+        msg = "폭염 특보 수준입니다. 야외 활동을 피하고 충분한 수분을 섭취하세요."
+    elif temp >= 28:
+        msg = "기온이 높으니 무리하지 마시고 수분을 충분히 보충하세요."
+    elif temp <= -5:
+        msg = "한파 주의! 부상 방지를 위해 실내 웜업 및 홈트를 추천합니다."
+    elif temp <= 5:
+        msg = "쌀쌀한 날씨입니다. 체온 유지를 위해 겉옷을 잘 챙겨 입으세요."
     return cond, icon, color, msg
 
 # 3. 실시간 GPS 좌표 -> 실제 한국 동네명 역지오코딩 (가산동, 부평동 등)
@@ -241,11 +272,11 @@ def reverse_geocode_korean(lat, lon):
 
     return "내 위치 (실시간 GPS)"
 
-# 날씨 메모리 캐시 (3분 TTL)
+# 날씨 메모리 캐시 (2분 TTL)
 _WEATHER_CACHE = {}
 
-# 4. 실시간 날씨 데이터 수집 함수 (기상 관측소 실측치 wttr.in 1순위 + Open-Meteo 2순위)
-def get_weather_data(lat=37.5665, lon=126.9780, location_name="서울특별시", is_gps=False):
+# 4. 실시간 날씨 데이터 수집 함수 (초정밀 Open-Meteo 실시간 관측/예보 연동)
+def get_weather_data(lat=37.5665, lon=126.9780, location_name="서울특별시", is_gps=False, force_refresh=False):
     if is_gps or location_name in ["실시간 GPS 위치", "내 위치", "실시간 GPS"]:
         real_location = reverse_geocode_korean(lat, lon)
         if real_location:
@@ -253,61 +284,73 @@ def get_weather_data(lat=37.5665, lon=126.9780, location_name="서울특별시",
 
     cache_key = (round(float(lat), 3), round(float(lon), 3))
     now = time.time()
-    if cache_key in _WEATHER_CACHE:
+    if not force_refresh and cache_key in _WEATHER_CACHE:
         cached_time, cached_data = _WEATHER_CACHE[cache_key]
-        if now - cached_time < 180:  # 3분 캐시
+        if now - cached_time < 120:  # 2분 캐시
             cached_copy = dict(cached_data)
             cached_copy["location_name"] = location_name
             cached_copy["is_gps"] = is_gps
             return cached_copy
 
-    # 1순위: 실제 관측소(METAR 실측 강수 및 날씨) 기반 wttr.in 조회
+    # 1순위: Open-Meteo 고정밀 실시간 기상 관측/예보 (기온, 체감온도, 습도, 운량, 강수량, 풍속, 주/야간)
     try:
-        wttr_url = f"https://wttr.in/{float(lat):.4f},{float(lon):.4f}?format=j1"
-        r = requests.get(wttr_url, headers={"User-Agent": "curl/7.68.0"}, timeout=2.5)
-        if r.status_code == 200:
-            data = r.json()
-            curr = data.get("current_condition", [{}])[0]
-            temp = float(curr.get("temp_C", 20.0))
-            wind = round(float(curr.get("windspeedKmph", 7.0)) * 1000 / 3600, 1)
-            code = int(curr.get("weatherCode", 0))
-            precip = float(curr.get("precipMM", 0.0))
-            desc = curr.get("weatherDesc", [{}])[0].get("value", "")
-            condition, icon, color, msg = interpret_weather_code(code, temp, text_desc=desc, precip=precip)
-            res = {
-                "temperature": round(temp, 1),
-                "windspeed": round(wind, 1),
-                "weather_code": code,
-                "condition": condition,
-                "icon": icon,
-                "color": color,
-                "message": msg,
-                "location_name": location_name,
-                "is_gps": is_gps,
-                "lat": float(lat), "lon": float(lon),
-            }
-            _WEATHER_CACHE[cache_key] = (now, res)
-            return res
+        url = (
+            f"https://api.open-meteo.com/v1/forecast?latitude={float(lat):.4f}&longitude={float(lon):.4f}"
+            f"&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,"
+            f"precipitation,rain,showers,weather_code,cloud_cover,wind_speed_10m&timezone=Asia/Seoul"
+        )
+        r = requests.get(url, timeout=3.5).json()
+        current = r.get("current", {})
+        temp = float(current.get("temperature_2m", 20.0))
+        feels = float(current.get("apparent_temperature", temp))
+        wind = round(float(current.get("wind_speed_10m", 2.0)), 1)
+        code = int(current.get("weather_code", 0))
+        cloud = int(current.get("cloud_cover", 0))
+        precip = float(current.get("precipitation", 0.0))
+        humidity = int(current.get("relative_humidity_2m", 50))
+        is_day = int(current.get("is_day", 1))
+
+        condition, icon, color, msg = interpret_weather_code(
+            code=code, temp=temp, precip=precip, cloud_cover=cloud, is_day=is_day
+        )
+
+        res = {
+            "temperature": round(temp, 1),
+            "apparent_temperature": round(feels, 1),
+            "humidity": humidity,
+            "cloud_cover": cloud,
+            "windspeed": wind,
+            "weather_code": code,
+            "condition": condition,
+            "icon": icon,
+            "color": color,
+            "message": msg,
+            "location_name": location_name,
+            "is_gps": is_gps,
+            "lat": float(lat), "lon": float(lon),
+        }
+        _WEATHER_CACHE[cache_key] = (now, res)
+        return res
     except Exception:
         pass
 
-    # 2순위 폴백: Open-Meteo 상세 파라미터 (강수량, 소나기 필드 합산)
+    # 2순위: Open-Meteo current_weather 심플 폴백
     try:
-        url = (
-            f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
-            f"&current=temperature_2m,precipitation,rain,showers,weather_code,wind_speed_10m&timezone=auto"
-        )
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={float(lat):.4f}&longitude={float(lon):.4f}&current_weather=true&timezone=auto"
         r = requests.get(url, timeout=3.0).json()
-        current = r.get("current", {}) or r.get("current_weather", {})
-        temp = current.get("temperature_2m") if "temperature_2m" in current else current.get("temperature", 20.0)
-        wind = current.get("wind_speed_10m") if "wind_speed_10m" in current else current.get("windspeed", 2.0)
-        code = current.get("weather_code") if "weather_code" in current else current.get("weathercode", 0)
-        precip = float(current.get("precipitation", 0.0)) + float(current.get("rain", 0.0)) + float(current.get("showers", 0.0))
-        condition, icon, color, msg = interpret_weather_code(code, temp, precip=precip)
+        cw = r.get("current_weather", {})
+        temp = float(cw.get("temperature", 20.0))
+        wind = round(float(cw.get("windspeed", 2.0)), 1)
+        code = int(cw.get("weathercode", 1))
+        is_day = int(cw.get("is_day", 1))
+        condition, icon, color, msg = interpret_weather_code(code=code, temp=temp, is_day=is_day)
 
         res = {
-            "temperature": round(float(temp), 1),
-            "windspeed": round(float(wind), 1),
+            "temperature": round(temp, 1),
+            "apparent_temperature": round(temp, 1),
+            "humidity": 50,
+            "cloud_cover": 30,
+            "windspeed": wind,
             "weather_code": code,
             "condition": condition,
             "icon": icon,
@@ -324,8 +367,9 @@ def get_weather_data(lat=37.5665, lon=126.9780, location_name="서울특별시",
 
     # 3순위: 모든 API 실패 시 중립적 기본값 반환
     return {
-        "temperature": 20.0, "windspeed": 2.0, "weather_code": 1,
-        "condition": "구름 조금", "icon": "fa-cloud-sun", "color": "#38BDF8",
+        "temperature": 20.0, "apparent_temperature": 20.0, "humidity": 50, "cloud_cover": 20,
+        "windspeed": 2.0, "weather_code": 1,
+        "condition": "대체로 맑음", "icon": "fa-cloud-sun", "color": "#FBBF24",
         "message": "오늘도 안전하고 즐겁게 운동을 즐겨보세요!",
         "location_name": location_name, "is_gps": is_gps,
         "lat": float(lat), "lon": float(lon),

@@ -1502,7 +1502,11 @@ function applyWeatherToDOM(w) {
     summary.innerHTML = `<span class="notranslate" translate="no" style="color: ${w.color || '#38BDF8'}; font-weight: 900;">${w.condition}</span> · <span style="color: #FFFFFF;">${w.temperature}℃</span>`;
   }
   if (windInfo) {
-    windInfo.textContent = `풍속 ${w.windspeed}m/s`;
+    let windText = `풍속 ${w.windspeed}m/s`;
+    if (w.apparent_temperature !== undefined && w.apparent_temperature !== null && Math.abs(w.apparent_temperature - w.temperature) >= 1) {
+      windText += ` (체감 ${w.apparent_temperature}℃)`;
+    }
+    windInfo.textContent = windText;
   }
   if (tip) {
     tip.textContent = w.message || "오늘도 즐겁게 운동하세요!";
@@ -1562,13 +1566,14 @@ function syncWeatherWithGPS(isAuto = false) {
   }
 }
 
-function fetchWeatherWithCoords(lat, lng) {
+function fetchWeatherWithCoords(lat, lng, forceRefresh = true) {
   const btnText = document.getElementById("btnGpsText");
   const btnIcon = document.getElementById("btnGpsIcon");
   const latVal = typeof lat === "number" ? lat.toFixed(5) : parseFloat(lat).toFixed(5);
   const lngVal = typeof lng === "number" ? lng.toFixed(5) : parseFloat(lng).toFixed(5);
+  const refreshParam = forceRefresh ? '&refresh=true' : '';
 
-  fetch(`/api/weather/?lat=${latVal}&lng=${lngVal}&loc_name=실시간 GPS`)
+  fetch(`/api/weather/?lat=${latVal}&lng=${lngVal}&loc_name=실시간 GPS${refreshParam}`)
     .then(res => res.json())
     .then(data => {
       if (data && data.status === "success" && data.weather) {

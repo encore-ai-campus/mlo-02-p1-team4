@@ -42,14 +42,14 @@
         <img src="https://github.com/GitJANG961013.png" width="90" style="border-radius:50%; border: 2px solid #30363d;" alt="기욱" /><br/>
         <b>기욱</b>
       </a><br/>
-      <small>👑 <b>팀장 / DB·ETL</b></small>
+      <small>👑 <b>팀장 백앤드 / DB·ETL</b></small>
     </td>
     <td width="25%">
       <a href="https://github.com/junbum8398-blip" target="_blank">
         <img src="https://github.com/junbum8398-blip.png" width="90" style="border-radius:50%; border: 2px solid #30363d;" alt="준범" /><br/>
         <b>준범</b>
       </a><br/>
-      <small>⚙️ <b>백엔드 / AI·동기화</b></small>
+      <small>⚙️ <b>프론트엔드 / AI·동기화</b></small>
     </td>
     <td width="25%">
       <a href="https://github.com/pes9476" target="_blank">

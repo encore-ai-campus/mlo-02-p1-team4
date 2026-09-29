@@ -37,8 +37,8 @@
 
 | 이름 | 역할 | 담당 업무 | GitHub |
 |:---:|:---:|---|:---:|
-| **기욱** | 👑 **팀장 (백엔드)** | • Supabase DB 구축 및 Django 연동<br/>• 데이터 정합성 검증 및 로깅 체계 수립<br/>• CI/CD 파이프라인 및 시설 데이터 ETL 구조 설계 | [GitJANG961013](https://github.com/GitJANG961013) |
-| **준범** | ⚙️ **프론트엔드 (AI·동기화)** | • 대시보드 라이브 기능 (실시간 날씨·스포츠 뉴스)<br/>• 비동기 시설 추천 및 파티 미션 허브<br/>• Groq+Gemini 듀얼 AI 및 시설 데이터 자동 동기화(Soft Delete) | [junbum8398-blip](https://github.com/junbum8398-blip) |
+| **기욱** | 👑 **팀장** | • Supabase DB 구축 및 Django 연동<br/>• 데이터 정합성 검증 및 로깅 체계 수립<br/>• CI/CD 파이프라인 및 시설 데이터 ETL 구조 설계 | [GitJANG961013](https://github.com/GitJANG961013) |
+| **준범** | ⚙️ **백엔드** | • 대시보드 라이브 기능 (실시간 날씨·스포츠 뉴스)<br/>• 비동기 시설 추천 및 파티 미션 허브<br/>• Groq+Gemini 듀얼 AI 및 시설 데이터 자동 동기화(Soft Delete) | [junbum8398-blip](https://github.com/junbum8398-blip) |
 | **은서** | 🎨 **프론트엔드** | • UI/UX 일관성 개선 및 캐릭터 명칭 통일<br/>• 캐릭터 피팅룸 및 전역(대시보드·마이페이지) 착용 상태 연동<br/>• 종료 파티 UI 처리 및 Render 배포 검수 | [pes9476](https://github.com/pes9476) |
 | **어진** | 📝 **기획/협업** | • 팀 가이드 및 협업 프롬프트 문서화<br/>• 설계 단계부터 구현·검증까지의 커뮤니케이션 구조 수립<br/>• 서비스 인터랙션 및 사용자 피드백 조율 | [jobless-fish](https://github.com/jobless-fish) |
 

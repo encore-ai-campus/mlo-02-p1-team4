@@ -33,7 +33,7 @@
 ## 👥 1. 팀 소개
 
 > **2026 국민체육진흥공단(KSPO) 공공데이터 활용 경진대회** · 서비스 개발 부문  
-> **배포 주소:** [https://netfit-production.onrender.com](https://netfit-production.onrender.com/) &nbsp;|&nbsp; **팀 저장소:** [https://github.com/encore-ai-campus/mlo-02-p1-team4](https://github.com/encore-ai-campus/mlo-02-p1-team4)
+> **배포 주소:** [https://netfit-production.onrender.com](https://netfit-production.onrender.com/) &nbsp;|&nbsp; **팀 저장소:** [https://github.com/pes9476/netfit/tree/runsv](https://github.com/pes9476/netfit/tree/runsv)
 
 | 이름 | 역할 | 담당 업무 | GitHub |
 |:---:|:---:|---|:---:|
@@ -729,8 +729,8 @@ KAKAO_REDIRECT_URI=http://127.0.0.1:8000/oauth/kakao/callback/
 
 ### 관련 소스 코드 및 작성 근거
 
-- [데이터베이스 모델 명세서 (models.py)](https://github.com/pes9476/netfit/blob/testsv/fitness/models.py)
-- [공공데이터 자동 동기화 파이프라인 (facility_sync.py)](https://github.com/pes9476/netfit/blob/testsv/fitness/facility_sync.py)
-- [AI 코칭 듀얼 엔진 라우터 (fitbot_api.py)](https://github.com/pes9476/netfit/blob/testsv/fitness/fitbot_api.py)
-- [Render 배포 정의서 (render.yaml)](https://github.com/pes9476/netfit/blob/testsv/render.yaml)
-- [GitHub Actions 자동화 워크플로우 (.github/workflows/)](https://github.com/pes9476/netfit/tree/testsv/.github/workflows)
+- [데이터베이스 모델 명세서 (models.py)](https://github.com/pes9476/netfit/blob/runsv/fitness/models.py)
+- [공공데이터 자동 동기화 파이프라인 (facility_sync.py)](https://github.com/pes9476/netfit/blob/runsv/fitness/facility_sync.py)
+- [AI 코칭 듀얼 엔진 라우터 (fitbot_api.py)](https://github.com/pes9476/netfit/blob/runsv/fitness/fitbot_api.py)
+- [Render 배포 정의서 (render.yaml)](https://github.com/pes9476/netfit/blob/runsv/render.yaml)
+- [GitHub Actions 자동화 워크플로우 (.github/workflows/)](https://github.com/pes9476/netfit/tree/runsv/.github/workflows)

@@ -262,9 +262,36 @@ flowchart TB
 | **AI 코칭 (핏봇)** | Groq-Gemini 스마트 듀얼 엔진 자동 폴백, 체육시설 RAG 추천, 실시간 스트리밍 | `fitness/fitbot_api.py`, `fitness/views.py` |
 | **실시간 데이터** | GPS 기반 Open-Meteo 초단기 강수·운량 계산, 네이버 스포츠 뉴스 롤링 티커 | `fitness/context_processors.py`, `fitness/services.py` |
 
+### 3-4. 프로젝트 Git 구조
+
+NetFit 팀은 브랜치 충돌을 방지하고 안정적인 운영 배포를 위해 **기능별 작업 브랜치 → `testsv`(검사 및 통합) → `runsv`(운영 배포 및 Render 연동)**의 브랜치 전략을 수립하여 협업을 진행했습니다.
+
+```mermaid
+gitGraph
+    commit id: "초기 구조 9/14"
+    branch testsv
+    commit id: "CI·동기화 9/22"
+    checkout main
+    branch runsv
+    commit id: "핏봇·파티 9/23"
+    branch netfit_giuk
+    commit id: "병합·0024 9/23"
+    checkout runsv
+    commit id: "이중화 9/24"
+    commit id: "시설 자동화 9/28"
+    commit id: "25770ab 착용 렌더러"
+```
+
+**팀 Git 협업 규칙 및 개발 원칙**
+- **브랜치 운영 원칙**: 운영 서버 배포는 `runsv` 브랜치만을 기준으로 하며, 기능 테스트와 사전 검증은 `testsv`에서 수행합니다.
+- **강제 푸시 금지**: 푸시 충돌 발생 시 강제 푸시(`--force`)를 금지하고, 항상 최신 원격 커밋을 먼저 받아 리베이스/머지 후 반영합니다.
+- **충돌 방지 백업**: 동일 파일 충돌 위험 시 날짜와 작업자를 표기해 백업 후 단계적으로 병합합니다.
+- **보안 및 환경변수 격리**: 비밀키 및 민감 정보는 `.env`로만 관리하며, `.gitignore`에 등록하여 GitHub Secret Scanning 차단을 방지합니다.
+- **검증 주도 협업**: AI 도구를 활용하여 기능을 구현하되, 최종 합격 판정과 배포 검증은 사람이 직접 브라우저 및 단위 테스트로 확인합니다.
+
 ---
 
-### 3-4. 프로젝트 폴더 구조
+### 3-5. 프로젝트 폴더 구조
 
 ```text
 netfit/

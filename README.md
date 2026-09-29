@@ -35,60 +35,12 @@
 > **2026 국민체육진흥공단(KSPO) 공공데이터 활용 경진대회** · 서비스 개발 부문  
 > **배포 주소:** [https://netfit-production.onrender.com](https://netfit-production.onrender.com/) &nbsp;|&nbsp; **팀 저장소:** [https://github.com/encore-ai-campus/mlo-02-p1-team4](https://github.com/encore-ai-campus/mlo-02-p1-team4)
 
-<table align="center" width="100%">
-  <tr align="center">
-    <td width="25%">
-      <a href="https://github.com/GitJANG961013" target="_blank">
-        <img src="https://github.com/GitJANG961013.png" width="90" style="border-radius:50%; border: 2px solid #30363d;" alt="기욱" /><br/>
-        <b>기욱</b>
-      </a><br/>
-      <small>👑 <b>팀장 백앤드 / DB·ETL</b></small>
-    </td>
-    <td width="25%">
-      <a href="https://github.com/junbum8398-blip" target="_blank">
-        <img src="https://github.com/junbum8398-blip.png" width="90" style="border-radius:50%; border: 2px solid #30363d;" alt="준범" /><br/>
-        <b>준범</b>
-      </a><br/>
-      <small>⚙️ <b>프론트엔드 / AI·동기화</b></small>
-    </td>
-    <td width="25%">
-      <a href="https://github.com/pes9476" target="_blank">
-        <img src="https://github.com/pes9476.png" width="90" style="border-radius:50%; border: 2px solid #30363d;" alt="은서" /><br/>
-        <b>은서</b>
-      </a><br/>
-      <small>🎨 <b>프론트엔드 / 배포검수</b></small>
-    </td>
-    <td width="25%">
-      <a href="https://github.com/jobless-fish" target="_blank">
-        <img src="https://github.com/jobless-fish.png" width="90" style="border-radius:50%; border: 2px solid #30363d;" alt="어진" /><br/>
-        <b>어진</b>
-      </a><br/>
-      <small>📝 <b>기획 / 협업가이드</b></small>
-    </td>
-  </tr>
-  <tr valign="top">
-    <td>
-      • Supabase DB 구축 & Django 연동<br/>
-      • 데이터 정합성 검증 & 로깅 체계<br/>
-      • CI/CD 파이프라인 & ETL 구조 설계
-    </td>
-    <td>
-      • 실시간 날씨·스포츠 뉴스 대시보드<br/>
-      • 비동기 시설 추천 & 파티 미션 허브<br/>
-      • Groq+Gemini 듀얼 AI & 자동 동기화
-    </td>
-    <td>
-      • UI/UX 일관성 개선 & 캐릭터 명칭 통일<br/>
-      • 캐릭터 피팅룸 & 전역 착용 상태 연동<br/>
-      • 종료 파티 UI 처리 & Render 배포 검수
-    </td>
-    <td>
-      • 팀 가이드 및 협업 프롬프트 문서화<br/>
-      • 설계·구현·검증 커뮤니케이션 조율<br/>
-      • 서비스 인터랙션 및 피드백 구조화
-    </td>
-  </tr>
-</table>
+| 이름 | 역할 | 담당 업무 | GitHub |
+|:---:|:---:|---|:---:|
+| **기욱** | 👑 **팀장 (백엔드)** | • Supabase DB 구축 및 Django 연동<br/>• 데이터 정합성 검증 및 로깅 체계 수립<br/>• CI/CD 파이프라인 및 시설 데이터 ETL 구조 설계 | [GitJANG961013](https://github.com/GitJANG961013) |
+| **준범** | ⚙️ **프론트엔드 (AI·동기화)** | • 대시보드 라이브 기능 (실시간 날씨·스포츠 뉴스)<br/>• 비동기 시설 추천 및 파티 미션 허브<br/>• Groq+Gemini 듀얼 AI 및 시설 데이터 자동 동기화(Soft Delete) | [junbum8398-blip](https://github.com/junbum8398-blip) |
+| **은서** | 🎨 **프론트엔드** | • UI/UX 일관성 개선 및 캐릭터 명칭 통일<br/>• 캐릭터 피팅룸 및 전역(대시보드·마이페이지) 착용 상태 연동<br/>• 종료 파티 UI 처리 및 Render 배포 검수 | [pes9476](https://github.com/pes9476) |
+| **어진** | 📝 **기획/협업** | • 팀 가이드 및 협업 프롬프트 문서화<br/>• 설계 단계부터 구현·검증까지의 커뮤니케이션 구조 수립<br/>• 서비스 인터랙션 및 사용자 피드백 조율 | [jobless-fish](https://github.com/jobless-fish) |
 
 ---
 
@@ -201,60 +153,40 @@ NetFit은 **Django 백엔드를 허브로 하여 사용자 웹 브라우저, 로
 
 ```mermaid
 flowchart TD
-    subgraph Client["사용자 브라우저 (클라이언트)"]
-        UI["반응형 웹 UI (HTML5 / CSS3 / Vanilla JS)"]
-        ChatWidget["전역 AI 챗봇 핏봇 위젯"]
-        GPS["브라우저 Geolocation GPS"]
+    %% 1. 프레젠테이션 계층
+    subgraph ClientTier["🖥️ Presentation Tier (사용자 웹 브라우저)"]
+        direction LR
+        UI["반응형 웹 대시보드 / 운동 기록 화면<br/>(HTML5 · CSS3 · Vanilla JS)"]
+        ChatWidget["전역 AI 핏봇 위젯<br/>(플로팅 챗봇 인터페이스)"]
+        Geo["브라우저 Geolocation<br/>(GPS 위치 기반 주변 탐색)"]
     end
 
-    subgraph Server["NetFit Django 백엔드 (Render / Python 3.13)"]
-        Router["URL 라우터 & 미들웨어"]
-        Views["Django Views (업무 처리 계층)"]
-        Services["비즈니스 서비스 (미션·랭킹·배틀)"]
-        SyncEngine["공공데이터 자동 동기화 엔진 (facility_sync)"]
-        FitbotEngine["스마트 AI 듀얼 엔진 라우터 (fitbot_api)"]
+    %% 2. 애플리케이션 계층
+    subgraph AppTier["⚙️ Application Tier (Django 5.2 / Render 호스팅)"]
+        direction LR
+        Core["코어 비즈니스 로직<br/>• 회원 인증 & 마스코트 성장<br/>• 파티 챌린지 & 실시간 랭킹"]
+        Sync["시설 데이터 자동 동기화<br/>• 공공데이터 URL 다운로드<br/>• 시설 폐업 대응 Soft Delete"]
+        AI["무중단 스마트 AI 듀얼 엔진<br/>• 1차: Groq (Llama-3 초고속)<br/>• 2차: Gemini 1.5 Flash (자동 폴백)"]
     end
 
-    subgraph Database["데이터베이스"]
-        Postgres[(PostgreSQL 프로덕션 DB)]
-        SQLite[(SQLite 로컬 개발 DB)]
+    %% 3. 데이터 및 외부 연동 계층
+    subgraph DataTier["💾 Data & External Tier (데이터베이스 및 외부 연동)"]
+        direction LR
+        DB[("PostgreSQL / SQLite<br/>(23개 핵심 모델 & 체육시설 마스터)")]
+        ExternalAPI["외부 실시간 연동 API<br/>• Open-Meteo 초단기 실측 기상<br/>• 카카오 OAuth & 네이버 플레이스"]
     end
 
-    subgraph External["외부 실시간 연동 서비스"]
-        OpenMeteo["Open-Meteo 실시간 기상 API"]
-        Portal["공공데이터포털 최신 CSV 다운로드 URL"]
-        Groq["1차: Groq Cloud (Llama-3)"]
-        Gemini["2차 폴백: Google Gemini 1.5 Flash"]
-        NaverPlace["네이버 플레이스 상세 딥링크"]
-        KakaoAuth["카카오 OAuth 인증 API"]
+    %% 4. 자동화 계층
+    subgraph BatchTier["⏰ Automation Tier (GitHub Actions CI/CD)"]
+        direction LR
+        CI["Django 102개 단위 테스트 자동 검증 (ci.yml) & 매일 새벽 4시 시설 갱신 크론 (facility-sync.yml)"]
     end
 
-    subgraph Automation["자동화 파이프라인 (GitHub Actions)"]
-        CronJob["일일 정기 크론 배치 (facility-sync.yml)"]
-        CI["자동 테스트 CI 파이프라인 (ci.yml)"]
-    end
-
-    UI <--> Router
-    ChatWidget <--> Router
-    GPS -.-> UI
-
-    Router <--> Views
-    Views <--> Services
-    Services <--> Postgres
-    Services <--> SQLite
-
-    Views <--> OpenMeteo
-    Views <--> KakaoAuth
-    Views -.-> NaverPlace
-
-    FitbotEngine -->|1차 초고속 호출| Groq
-    FitbotEngine -->|한도/장애 시 자동 우회| Gemini
-
-    CronJob -->|새벽 4시 실행| SyncEngine
-    SyncEngine -->|최신본 다운로드| Portal
-    SyncEngine -->|Soft Delete 갱신| Postgres
-
-    CI -->|코드 Push 시| Views
+    %% 계층 간 명확한 데이터 흐름
+    ClientTier ==>|"HTTPS 요청 / 응답 (JSON & HTML)"| AppTier
+    AppTier <==>|"ORM 데이터 저장 및 조회"| DB
+    AppTier <==>|"실시간 관측치 수집 & AI 질의"| ExternalAPI
+    BatchTier -.->|"자동 테스트 검증 및 배치 트리거"| AppTier
 ```
 
 ---

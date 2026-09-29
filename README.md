@@ -149,44 +149,104 @@
 
 ### 3-2. 시스템 아키텍처
 
-NetFit은 **Django 백엔드를 허브로 하여 사용자 웹 브라우저, 로컬/운영 DB, 외부 실시간 기상/공공데이터, 그리고 듀얼 AI 엔진을 유기적으로 연결하는 구조**로 설계되었습니다.
+위에서 아래로 스크롤하며 보면 됩니다. 브라우저 → Django → 외부 연동 → DB → GitHub Actions 순서입니다.
+
+#### 1. 클라이언트
 
 ```mermaid
-flowchart TD
-    %% 1. 프레젠테이션 계층
-    subgraph ClientTier["🖥️ Presentation Tier (사용자 웹 브라우저)"]
-        direction LR
-        UI["반응형 웹 대시보드 / 운동 기록 화면<br/>(HTML5 · CSS3 · Vanilla JS)"]
-        ChatWidget["전역 AI 핏봇 위젯<br/>(플로팅 챗봇 인터페이스)"]
-        Geo["브라우저 Geolocation<br/>(GPS 위치 기반 주변 탐색)"]
+flowchart TB
+    GPS["브라우저 Geolocation GPS"] -.-> UI
+    UI["반응형 웹 UI<br/>HTML5 / CSS3 / Vanilla JS"]
+    BOT["전역 AI 챗봇 핏봇 위젯"]
+```
+
+#### 2. Django 백엔드
+
+```mermaid
+flowchart TB
+    R["URL 라우터 & 미들웨어"] --> V["Django Views<br/>업무 처리 계층"]
+    V --> SVC["비즈니스 서비스<br/>미션 · 랭킹 · 배틀"]
+    V --> SYNC["facility_sync<br/>공공데이터 자동 동기화"]
+    V --> FIT["fitbot_api<br/>AI 듀얼 엔진 라우터"]
+```
+
+#### 3. 외부 실시간 연동
+
+```mermaid
+flowchart TB
+    V["Views"] <--> WX["Open-Meteo<br/>실시간 기상"]
+    V <--> KK["카카오 OAuth"]
+    V -.-> NV["네이버 플레이스<br/>상세 딥링크"]
+    FIT["fitbot_api"] -->|"1차 초고속 호출"| GQ["Groq Cloud<br/>Llama-3"]
+    FIT -.->|"한도/장애 시 우회"| GM["Gemini<br/>1.5 Flash"]
+    SYNC["facility_sync"] -->|"최신본 다운로드"| CSV["공공데이터포털<br/>CSV URL"]
+```
+
+#### 4. 데이터베이스
+
+```mermaid
+flowchart TB
+    SVC["Services"] --> PG[("PostgreSQL<br/>프로덕션")]
+    SVC --> SL[("SQLite<br/>로컬 개발")]
+    SYNC["facility_sync"] -->|"Soft Delete 갱신"| PG
+```
+
+#### 5. GitHub Actions
+
+```mermaid
+flowchart TB
+    CRON["facility-sync.yml"] -->|"새벽 4시"| SYNC["facility_sync"]
+    CI["ci.yml"] -->|"코드 Push 시"| V["Views 테스트"]
+```
+
+#### 전체 통합 아키텍처
+
+```mermaid
+flowchart TB
+    subgraph C["1. 클라이언트"]
+        GPS["GPS"] -.-> UI["웹 UI"]
+        BOT["핏봇 위젯"]
     end
 
-    %% 2. 애플리케이션 계층
-    subgraph AppTier["⚙️ Application Tier (Django 5.2 / Render 호스팅)"]
-        direction LR
-        Core["코어 비즈니스 로직<br/>• 회원 인증 & 마스코트 성장<br/>• 파티 챌린지 & 실시간 랭킹"]
-        Sync["시설 데이터 자동 동기화<br/>• 공공데이터 URL 다운로드<br/>• 시설 폐업 대응 Soft Delete"]
-        AI["무중단 스마트 AI 듀얼 엔진<br/>• 1차: Groq (Llama-3 초고속)<br/>• 2차: Gemini 1.5 Flash (자동 폴백)"]
+    subgraph S["2. Django 백엔드"]
+        R["Router"] --> V["Views"]
+        V --> SVC["Services"]
+        V --> SYNC["facility_sync"]
+        V --> FIT["fitbot_api"]
     end
 
-    %% 3. 데이터 및 외부 연동 계층
-    subgraph DataTier["💾 Data & External Tier (데이터베이스 및 외부 연동)"]
-        direction LR
-        DB[("PostgreSQL / SQLite<br/>(23개 핵심 모델 & 체육시설 마스터)")]
-        ExternalAPI["외부 실시간 연동 API<br/>• Open-Meteo 초단기 실측 기상<br/>• 카카오 OAuth & 네이버 플레이스"]
+    subgraph E["3. 외부 연동"]
+        WX["Open-Meteo"]
+        CSV["공공데이터 CSV"]
+        GQ["Groq"]
+        GM["Gemini"]
+        NV["네이버 플레이스"]
+        KK["카카오 OAuth"]
     end
 
-    %% 4. 자동화 계층
-    subgraph BatchTier["⏰ Automation Tier (GitHub Actions CI/CD)"]
-        direction LR
-        CI["Django 102개 단위 테스트 자동 검증 (ci.yml) & 매일 새벽 4시 시설 갱신 크론 (facility-sync.yml)"]
+    subgraph D["4. DB"]
+        PG[("Postgres")]
+        SL[("SQLite")]
     end
 
-    %% 계층 간 명확한 데이터 흐름
-    ClientTier ==>|"HTTPS 요청 / 응답 (JSON & HTML)"| AppTier
-    AppTier <==>|"ORM 데이터 저장 및 조회"| DB
-    AppTier <==>|"실시간 관측치 수집 & AI 질의"| ExternalAPI
-    BatchTier -.->|"자동 테스트 검증 및 배치 트리거"| AppTier
+    subgraph A["5. Actions"]
+        CRON["sync.yml 04:00"]
+        CI["ci.yml Push"]
+    end
+
+    UI <--> R
+    BOT <--> R
+    SVC --> PG
+    SVC --> SL
+    V <--> WX
+    V <--> KK
+    V -.-> NV
+    FIT -->|"1차"| GQ
+    FIT -.->|"폴백"| GM
+    CRON --> SYNC
+    SYNC --> CSV
+    SYNC -->|"Soft Delete"| PG
+    CI --> V
 ```
 
 ---

@@ -149,105 +149,35 @@
 
 ### 3-2. 시스템 아키텍처
 
-위에서 아래로 스크롤하며 보면 됩니다. 브라우저 → Django → 외부 연동 → DB → GitHub Actions 순서입니다.
-
-#### 1. 클라이언트
+사용자 화면의 요청은 Django에서 처리하며, 필요한 데이터와 외부 서비스를 연결합니다.
 
 ```mermaid
 flowchart TB
-    GPS["브라우저 Geolocation GPS"] -.-> UI
-    UI["반응형 웹 UI<br/>HTML5 / CSS3 / Vanilla JS"]
-    BOT["전역 AI 챗봇 핏봇 위젯"]
+    UI(["사용자 화면<br/>대시보드 · 캐릭터 꾸미기 · 핏봇"])
+    APP["Django · Render<br/>인증 · 운동 기록 · 미션 · 아이템"]
+    DB[("서비스 데이터<br/>사용자 · 운동 · 파티 · 시설")]
+    AI["AI 답변<br/>Groq → Gemini 대체 호출"]
+    API["외부 연동<br/>Open-Meteo 날씨 · 카카오 로그인"]
+
+    UI <-->|"요청 · 응답"| APP
+    APP <-->|"조회 · 저장"| DB
+    APP <-->|"핏봇 질문 · 답변"| AI
+    APP <-->|"날씨 · 인증"| API
+
+    classDef screen fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e,stroke-width:1.5px;
+    classDef core fill:#d1fae5,stroke:#059669,color:#064e3b,stroke-width:2px;
+    classDef data fill:#ede9fe,stroke:#7c3aed,color:#4c1d95,stroke-width:1.5px;
+    classDef external fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:1.5px;
+    class UI screen;
+    class APP core;
+    class DB data;
+    class AI,API external;
 ```
 
-#### 2. Django 백엔드
-
-```mermaid
-flowchart TB
-    R["URL 라우터 & 미들웨어"] --> V["Django Views<br/>업무 처리 계층"]
-    V --> SVC["비즈니스 서비스<br/>미션 · 랭킹 · 배틀"]
-    V --> SYNC["facility_sync<br/>공공데이터 자동 동기화"]
-    V --> FIT["fitbot_api<br/>AI 듀얼 엔진 라우터"]
-```
-
-#### 3. 외부 실시간 연동
-
-```mermaid
-flowchart TB
-    V["Views"] <--> WX["Open-Meteo<br/>실시간 기상"]
-    V <--> KK["카카오 OAuth"]
-    V -.-> NV["네이버 플레이스<br/>상세 딥링크"]
-    FIT["fitbot_api"] -->|"1차 초고속 호출"| GQ["Groq Cloud<br/>Llama-3"]
-    FIT -.->|"한도/장애 시 우회"| GM["Gemini<br/>1.5 Flash"]
-    SYNC["facility_sync"] -->|"최신본 다운로드"| CSV["공공데이터포털<br/>CSV URL"]
-```
-
-#### 4. 데이터베이스
-
-```mermaid
-flowchart TB
-    SVC["Services"] --> PG[("PostgreSQL<br/>프로덕션")]
-    SVC --> SL[("SQLite<br/>로컬 개발")]
-    SYNC["facility_sync"] -->|"Soft Delete 갱신"| PG
-```
-
-#### 5. GitHub Actions
-
-```mermaid
-flowchart TB
-    CRON["facility-sync.yml"] -->|"새벽 4시"| SYNC["facility_sync"]
-    CI["ci.yml"] -->|"코드 Push 시"| V["Views 테스트"]
-```
-
-#### 전체 통합 아키텍처
-
-```mermaid
-flowchart TB
-    subgraph C["1. 클라이언트"]
-        GPS["GPS"] -.-> UI["웹 UI"]
-        BOT["핏봇 위젯"]
-    end
-
-    subgraph S["2. Django 백엔드"]
-        R["Router"] --> V["Views"]
-        V --> SVC["Services"]
-        V --> SYNC["facility_sync"]
-        V --> FIT["fitbot_api"]
-    end
-
-    subgraph E["3. 외부 연동"]
-        WX["Open-Meteo"]
-        CSV["공공데이터 CSV"]
-        GQ["Groq"]
-        GM["Gemini"]
-        NV["네이버 플레이스"]
-        KK["카카오 OAuth"]
-    end
-
-    subgraph D["4. DB"]
-        PG[("Postgres")]
-        SL[("SQLite")]
-    end
-
-    subgraph A["5. Actions"]
-        CRON["sync.yml 04:00"]
-        CI["ci.yml Push"]
-    end
-
-    UI <--> R
-    BOT <--> R
-    SVC --> PG
-    SVC --> SL
-    V <--> WX
-    V <--> KK
-    V -.-> NV
-    FIT -->|"1차"| GQ
-    FIT -.->|"폴백"| GM
-    CRON --> SYNC
-    SYNC --> CSV
-    SYNC -->|"Soft Delete"| PG
-    CI --> V
-```
+- **화면:** Django 템플릿·HTML·CSS·JavaScript로 구성하며, 위치 권한을 허용하면 GPS 정보를 활용합니다. 시설 상세 정보는 네이버 플레이스 검색 링크로 연결합니다.
+- **데이터:** 운영은 PostgreSQL, 로컬 개발은 SQLite를 선택할 수 있습니다. 환경별 DB를 구분해 사용합니다.
+- **품질·배포:** GitHub Actions에서 검사·테스트를 수행하고, 운영 저장소의 `runsv` 변경은 연결된 Render 서비스에서 배포합니다.
+- **시설 동기화:** 별도 관리 명령이 CSV를 검증하고 설정된 DB에 반영합니다. 현재 `facility-sync.yml`은 `testsv`와 `TEST_DATABASE_URL`을 사용하며, 예약 설정은 한국 시각 월요일 03:00입니다. 실제 실행 성공 여부는 Actions 기록에서 확인합니다.
 
 ---
 
@@ -452,61 +382,79 @@ erDiagram
 
 ### 7-1. 사용자 핵심 서비스 흐름
 
+운동을 선택하고 기록한 뒤, 보상을 꾸미기와 다음 운동으로 이어가는 흐름입니다.
+
 ```mermaid
-flowchart LR
-    Start([접속 / 로그인]) --> Dash[대시보드 실시간 브리핑]
-    Dash -->|날씨 확인 & 핏봇 상담| SelectWorkout[오늘의 운동 결정]
-    SelectWorkout --> PartyCheck{파티 챌린지 참가?}
+flowchart TB
+    LOGIN(["01 · 시작<br/>로그인 · 최초 캐릭터 설정"])
+    DASH["02 · 대시보드<br/>날씨 · 미션 · 활동 현황 확인"]
+    SOLO["개인 운동<br/>내 목표에 맞춰 진행"]
+    PARTY["파티 운동<br/>함께 목표에 도전"]
+    RECORD["03 · 운동 기록<br/>종목 · 시간 입력 / 시설 선택 가능"]
+    REWARD["04 · 보상 확인<br/>기록 저장 · 배지 및 포인트 획득"]
+    SHOP["05 · 캐릭터 꾸미기<br/>아이템 구매 · 착용"]
+    RANK["파티 참여 시<br/>순위 · 목표 달성 현황 확인"]
 
-    PartyCheck -->|Yes| PartyTimer[파티 퀘스트 시작 & 자동 타이머]
-    PartyCheck -->|No| SoloTimer[개인 운동 수행]
+    LOGIN --> DASH
+    DASH --> SOLO
+    DASH --> PARTY
+    SOLO --> RECORD
+    PARTY --> RECORD
+    RECORD --> REWARD
+    REWARD --> SHOP
+    REWARD -.-> RANK
 
-    PartyTimer --> Record[운동 기록 작성]
-    SoloTimer --> Record
-
-    Record -->|GPS 위치 기반| FacPick[주변 체육시설 비동기 추천 & 원클릭 선택]
-    FacPick --> SaveRecord[기록 저장 & 경험치 획득]
-
-    SaveRecord --> ResultCheck{파티 1등 달성?}
-    ResultCheck -->|1등| Confetti[화면 가득 축하 폭죽 애니메이션]
-    ResultCheck -->|달성| LevelUp[마스코트 능력치 성장 & 랭킹 반영]
+    classDef screen fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e,stroke-width:1.5px;
+    classDef activity fill:#f1f5f9,stroke:#64748b,color:#1e293b,stroke-width:1.5px;
+    classDef reward fill:#d1fae5,stroke:#059669,color:#064e3b,stroke-width:1.5px;
+    classDef optional fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:1.5px;
+    class LOGIN,DASH screen;
+    class SOLO,PARTY,RECORD activity;
+    class REWARD,SHOP reward;
+    class RANK optional;
 ```
+
+핏봇 상담과 시설 추천은 필요할 때 이용할 수 있습니다. 착용한 아이템은 피팅룸·대시보드·마이페이지의 캐릭터에 반영되며, 파티 1등 축하 연출은 해당 조건을 충족했을 때 표시됩니다.
 
 ---
 
-### 7-2. AI 운동 코칭 챗봇 '핏봇' 무중단 듀얼 엔진 흐름
+### 7-2. AI 운동 코칭 챗봇 '핏봇' 듀얼 엔진 응답 흐름
+
+Groq를 우선 사용하고, 일부 실패 상황에서는 Gemini로 대체 호출합니다. 정상 응답은 초록색, 오류 안내는 주황색으로 구분했습니다.
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor User as 사용자
-    participant Front as 핏봇 프론트 위젯
-    participant Django as Django 라우터 (fitbot_api)
-    participant Groq as 1차 엔진: Groq (Llama-3)
-    participant Gemini as 2차 엔진: Google Gemini 1.5 Flash
-    participant Supabase as 체육시설 지리정보 RAG
+flowchart TB
+    QUESTION(["사용자 질문<br/>핏봇 캐릭터 선택 · 질문 입력"])
+    PREP["요청 확인 · 답변 준비<br/>시설 안내 선택 시 DB 검색 결과 활용"]
+    GROQ["1차 · Groq<br/>설정된 키가 있으면 호출"]
+    GEMINI["2차 · Gemini<br/>설정된 키가 있으면 대체 호출"]
+    ANSWER(["답변 표시<br/>캐릭터 말풍선으로 안내"])
+    ERROR["오류 안내<br/>이용 한도 · 연결 설정 · 호출 실패"]
 
-    User->>Front: 운동 고민 또는 주변 시설 질문 입력
-    Front->>Django: POST /fitness/fitbot/chat/ (JSON 요청)
-    Django->>Supabase: 질문 키워드 기반 시설 위치 검색
-    Supabase-->>Django: 관련 체육시설 컨텍스트 반환
+    QUESTION --> PREP
+    PREP --> GROQ
+    GROQ -->|"성공"| ANSWER
+    GROQ -->|"키 없음 / 429 외 실패 후"| GEMINI
+    GROQ -->|"이용 한도 초과 · 429"| ERROR
+    GEMINI -->|"성공"| ANSWER
+    GEMINI -->|"키 없음 / 호출 실패 / 429"| ERROR
 
-    rect rgb(235, 248, 255)
-        note over Django,Groq: 1차 초고속 추론 시도
-        Django->>Groq: 질문 + 시설 컨텍스트 프롬프트 전달
-        alt Groq 정상 응답
-            Groq-->>Django: 초고속 답변 생성
-        else 분당 한도 초과(429) / 모델 장애 / 키 누락
-            Groq--xDjango: 에러 응답 수신
-            note over Django,Gemini: 2차 스마트 폴백 즉시 실행 (0.1초 전환)
-            Django->>Gemini: 동일 프롬프트 재전송
-            Gemini-->>Django: Gemini 답변 정상 생성
-        end
-    end
-
-    Django-->>Front: 완성된 코칭 답변 JSON 반환
-    Front-->>User: 마스코트 프로필 아바타와 함께 대화 말풍선 렌더링
+    classDef input fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e,stroke-width:1.5px;
+    classDef primary fill:#ede9fe,stroke:#7c3aed,color:#4c1d95,stroke-width:1.5px;
+    classDef secondary fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e,stroke-width:1.5px;
+    classDef success fill:#d1fae5,stroke:#059669,color:#064e3b,stroke-width:2px;
+    classDef warning fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:1.5px;
+    class QUESTION,PREP input;
+    class GROQ primary;
+    class GEMINI secondary;
+    class ANSWER success;
+    class ERROR warning;
 ```
+
+- 각 엔진 안의 모델 재시도는 도식에서 생략했습니다. 요청 형식·로그인·시설 검색에 문제가 있으면 AI 호출 전에 안내할 수 있습니다.
+- 시설 DB 조회는 **시설 안내 캐릭터를 선택한 경우**에 수행합니다. 검색 결과가 없으면 시설 없음 안내를 바로 반환합니다.
+- 현재 코드는 Groq의 **429 응답에서 바로 이용 한도를 안내**합니다. 모든 오류가 Gemini로 전환되는 것은 아니므로, 제목의 ‘무중단’과 본문의 ‘0.1초 전환’은 제외했습니다.
+- 두 키가 모두 없으면 설정 오류를 즉시 안내합니다. AI 모델명은 환경 설정에 따라 달라질 수 있어 특정 모델명을 도식에 고정하지 않았습니다.
 
 ---
 
